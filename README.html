@@ -1,0 +1,228 @@
+<h1 id="exo-ajax-avec-des-api">Exo "Ajax avec des API"</h1>
+<h2 id="objectifs">Objectifs</h2>
+<ul>
+<li>apprivoiser les requêtes HTTP effectuées avec JavaScript (XmlHttpRequest)</li>
+<li>comprendre le concept «&nbsp;Ajax&nbsp;»</li>
+<li>pratiquer dans un cas concret les requêtes XHR</li>
+</ul>
+<h2 id="concepts">Concepts</h2>
+<h3 id="pour-le-rendu-_initial_">Pour le rendu <em>initial</em></h3>
+<h4 id="actuellement-sans-ajax">Actuellement (sans Ajax)</h4>
+<ol>
+<li><strong>Client :</strong> demande une page</li>
+<li><em>requête HTTP</em></li>
+<li><strong>Serveur HTTP :</strong> réceptionne la requête HTTP</li>
+<li><strong>Code applicatif :</strong> script(s) PHP calcule le HTML de réponse</li>
+<li><em>réponse HTTP</em></li>
+<li><strong>Client :</strong> affiche un rendu</li>
+</ol>
+<p><img src="content/client-serveur.png" alt="" /></p>
+<h4 id="avec-ajax">Avec Ajax</h4>
+<ol>
+<li><strong>Client :</strong> demande une page</li>
+<li><em>requête HTTP</em></li>
+<li><strong>Serveur HTTP :</strong> réceptionne la requête HTTP</li>
+<li><strong>Code applicatif :</strong> script(s) PHP calcule le HTML de réponse</li>
+<li><em>réponse HTTP</em></li>
+<li><strong>Client :</strong> récupère la réponse &amp; affiche un rendu</li>
+</ol>
+<p><img src="content/client-serveur.png" alt="" /></p>
+<p>=&gt; <strong>aucune différence pour le chargement initial de la page !</strong></p>
+<h3 id="pour-les-rendus-_ultérieurs_">Pour les rendus <em>ultérieurs</em></h3>
+<h4 id="actuellement-sans-ajax-1">Actuellement (sans Ajax)</h4>
+<p>Ben, la page ne change pas, en fait 🙈</p>
+<h4 id="avec-ajax-1">Avec Ajax</h4>
+<p>🤔 <strong>SANS RECHARGER la page</strong> 🤔</p>
+<ol>
+<li><strong>Sur la page :</strong> action utilisateur (event JS) =&gt; objet XHR modélisant la requête HTTP</li>
+<li><em>envoi de la requête HTTP</em></li>
+<li><strong>Serveur HTTP :</strong> réceptionne la requête HTTP</li>
+<li><strong>Code applicatif :</strong> script(s) PHP (ou autre) calcul le JSON/XML de réponse</li>
+<li><em>réponse HTTP</em></li>
+<li><strong>Sur la page :</strong> JS récupère la réponse &amp; modifie le DOM =&gt; impact sur le rendu HTML 🎉</li>
+</ol>
+<p><img src="content/ajax_request.png" alt="" /></p>
+<h2 id="exemple-de-code-js-pour-une-requête-ajax-avec-fetch">Exemple de code JS pour une requête Ajax avec <code>fetch()</code></h2>
+<ul>
+<li><a href="https://developer.mozilla.org/fr/docs/Web/API/Fetch_API">[MDN] Doc de <code>fetch</code></a></li>
+<li><a href="https://developer.mozilla.org/fr/docs/Web/API/Fetch_API/Using_Fetch">[MDN] Guide d'utilisation de <code>fetch</code></a></li>
+</ul>
+<p><code>fetch</code> est une fonction native des navigateurs récents, qui permet de faire des requêtes Ajax sans avoir à écrire du code compliqué avec <code>XMLHttpRequest</code>.</p>
+<p>En pratique, tout appel Ajax / requête HTTP / requête XHR aura le même code de base. Le code utilisant <code>fetch</code> est un peu plus léger et lisible.</p>
+<p>On changera essentiellement, selon les besoins :</p>
+<ul>
+<li>la méthode HTTP</li>
+<li>l'URL de la requête HTTP</li>
+<li>le traitement à faire une fois les données reçues au format JSON</li>
+</ul>
+<pre><code class="hljs js language-js"><span class="hljs-comment">/**
+ * Options de la future requête HTTP
+ */</span>
+<span class="hljs-keyword">let</span> fetchOptions = {
+  <span class="hljs-comment">// --- Toujours défini :</span>
+
+  <span class="hljs-comment">// La méthode HTTP (GET, POST, etc.)</span>
+  <span class="hljs-attr">method</span>: <span class="hljs-string">&#x27;GET&#x27;</span>,
+
+  <span class="hljs-comment">// --- Bonus (exemples) :</span>
+
+  <span class="hljs-comment">// On utilisera souvent Cross Origin Resource Sharing qui apporte</span>
+  <span class="hljs-comment">// une sécurité pour les requêtes HTTP effectuée avec XHR entre 2</span>
+  <span class="hljs-comment">// domaines différents.</span>
+  <span class="hljs-attr">mode</span>: <span class="hljs-string">&#x27;cors&#x27;</span>,
+  <span class="hljs-comment">// Veut-on que la réponse puisse être mise en cache par le navigateur&amp;nbsp;?</span>
+  <span class="hljs-comment">// Non durant le développement, oui en production.</span>
+  <span class="hljs-attr">cache</span>: <span class="hljs-string">&#x27;no-cache&#x27;</span>
+
+  <span class="hljs-comment">// Si on veut envoyer des données avec la requête =&gt; décommenter et remplacer data par le tableau de données</span>
+  <span class="hljs-comment">// , body : JSON.stringify(data)</span>
+};
+
+
+<span class="hljs-comment">/**
+ * La fonction native fetch() permet de lancer une requête HTTP depuis JS.
+ *
+ * Dans DevTools &gt; onglet &quot;Network&quot;, on pourra voir cette requête avec le
+ * filtre &quot;XHR&quot;.
+ *
+ * Arguments de fetch() :
+ * 1. l&#x27;URL à laquelle on veut accéder
+ * 2. les options de cette requête HTTP
+ */</span>
+request = <span class="hljs-title function_">fetch</span>(<span class="hljs-string">&#x27;http://www.domaine.tld/endpoint&#x27;</span>, fetchOptions);
+<span class="hljs-comment">// La requête vient d&#x27;être envoyée !</span>
+
+<span class="hljs-comment">// On n&#x27;a pas encore la réponse, mais on se prépare déjà à la recevoir.</span>
+<span class="hljs-comment">// Une fois la réponse reçue, la fonction de callback précisée en argument</span>
+<span class="hljs-comment">// sera automatiquement appelée.</span>
+request.<span class="hljs-title function_">then</span>(
+  <span class="hljs-comment">// Cette fonction de callback est définie directement &quot;à la volée&quot; =&gt; fonction anonyme.</span>
+  <span class="hljs-comment">// Elle recevra en argument la réponse brute provenant du serveur.</span>
+  <span class="hljs-keyword">function</span>(<span class="hljs-params">response</span>) {
+    <span class="hljs-comment">// On sait que la réponse est au format JSON (JavaScript Object Notation),</span>
+    <span class="hljs-comment">// donc on transforme la réponse : conversion texte =&gt; objet JS</span>
+    <span class="hljs-keyword">return</span> response.<span class="hljs-title function_">json</span>();
+  }
+)
+
+<span class="hljs-comment">// On peut enchaîner les fonctions de traitement de la réponse.</span>
+.<span class="hljs-title function_">then</span>(
+  <span class="hljs-comment">// Celle-ci étant chaînée à la précédente, elle recevra en argument la réponse</span>
+  <span class="hljs-comment">// précédemment convertie en objet JS.</span>
+  <span class="hljs-keyword">function</span>(<span class="hljs-params">jsonResponse</span>) {
+    <span class="hljs-comment">// Désormais, on a accès aux données facilement et on peut travailler avec :</span>
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(jsonResponse);
+
+    <span class="hljs-comment">// TODO, utiliser ces données pour modifier la page, afficher les données, etc.</span>
+  }
+);
+</code></pre>
+<h2 id="exo">Exo</h2>
+<p>On va <strong>consommer</strong> une API parmi la liste suivante :</p>
+<ul>
+<li>https://swapi.dev/ : énormément de données sur l'univers Star Wars</li>
+<li>https://anapioficeandfire.com/ : énormément de données sur l'univers Ice and Fire (Game of Thrones)</li>
+<li>https://api.chucknorris.io/ : des centaines de faits (réels ou non ?) à propos de Chuck Norris</li>
+</ul>
+<p>Chacune de ces APIs fournit une documentation permettant de connaître les <em>Endpoints</em> disponibles, et leurs contenus/actions.</p>
+<h3 id="analyse">Analyse</h3>
+<p>Choisissez une API, et analysez les ressources disponibles afin de répondre à ces questions.</p>
+<hr />
+<p><details><summary>Star Wars API</summary></p>
+<p><details><summary>Quelle est l'URL de base de cette API ? (hors <em>endpoints</em>)</summary></p>
+<p><code>https://swapi.dev/api</code></p>
+<p>⚠️ attention lors des requêtes à l'API, il faudra bien utiliser http<strong>s</strong>:// même si la doc ne le précise pas forcément (sinon, réponses 301 <em>Moved Permanently</em>)</p>
+<p></details></p>
+<p><details><summary>Quel <em>endpoint</em> permet d'avoir la liste de tous les personnages ?</summary></p>
+<p><code>/people/</code></p>
+<p>Source : https://swapi.dev/documentation#people</p>
+<p>⚠️ attention à ne pas oublier / de fin ⚠️</p>
+<p></details><br />
+<details><summary>Quel <em>endpoint</em> permet d'avoir le véhicule "Sand Crawler" ?</summary></p>
+<p><code>/vehicles/4/</code></p>
+<p>Source : https://swapi.dev/documentation#vehicles</p>
+<p>On peut imaginer que ce véhicule possède l'id 4 dans une table <code>vehicles</code>. Mais en fait, on n'en sait rien, car on n'a pas accès à la base de données qui se cache derrière l'API qu'on consomme.</p>
+<p></details></p>
+<p></details></p>
+<hr />
+<p><details><summary>Ice and Fire API</summary></p>
+<p><details><summary>Quelle est l'URL de base de cette API ? (hors <em>endpoints</em>)</summary></p>
+<p><code>https://anapioficeandfire.com/api</code></p>
+<p>⚠️ attention lors des requêtes à l'API, il faudra bien utiliser http<strong>s</strong>:// même si la doc ne le précise pas forcément (sinon, réponses 301 <em>Moved Permanently</em>)</p>
+<p></details></p>
+<p><details><summary>Quel <em>endpoint</em> permet d'avoir la liste de tous les personnages ?</summary></p>
+<p><code>/characters</code></p>
+<p>Source : https://anapioficeandfire.com/Documentation#characters</p>
+<p>⚠️ attention à ne pas mettre de / de fin ⚠️</p>
+<p></details><br />
+<details><summary>Quel <em>endpoint</em> permet d'avoir la maison "House Allyrion of Godsgrace" ?</summary></p>
+<p><code>/houses/2</code></p>
+<p>Source : https://anapioficeandfire.com/Documentation#houses</p>
+<p>On peut imaginer que cette maison possède l'id 2 dans une table <code>houses</code>. Mais en fait, on n'en sait rien, car on n'a pas accès à la base de données qui se cache derrière l'API qu'on consomme.</p>
+<p></details></p>
+<p></details></p>
+<hr />
+<p><details><summary>Chuck Norris API</summary></p>
+<p><details><summary>Quelle est l'URL de base de cette API ? (hors <em>endpoints</em>)</summary></p>
+<p><code>https://api.chucknorris.io/</code></p>
+<p></details></p>
+<p><details><summary>Quel <em>endpoint</em> permet d'avoir la liste de toutes les catégories de "Chuck Norris facts" ?</summary></p>
+<p><code>/jokes/categories</code></p>
+<p>Source : https://api.chucknorris.io/</p>
+<p></details><br />
+<details><summary>Quel <em>endpoint</em> permet d'avoir un "Chuck Norris fact" au hasard de la catégorie <em>dev</em> ?</summary></p>
+<p><code>/jokes/random?category=dev</code></p>
+<p>Source : https://api.chucknorris.io/</p>
+<p></details></p>
+<p></details></p>
+<hr />
+<h3 id="instructions">Instructions</h3>
+<hr />
+<p><details><summary>Star Wars API</summary></p>
+<ul>
+<li>récupérer le nom du personnage ayant l'id 10</li>
+<li>afficher ce nom dans la console</li>
+<li>récupérer le nom des 10 premiers vaisseaux</li>
+<li>afficher ces noms dans la console</li>
+</ul>
+<p></details></p>
+<hr />
+<p><details><summary>Ice and Fire API</summary></p>
+<ul>
+<li>récupérer le nom du personnage ayant l'id 271</li>
+<li>afficher ce nom dans la console</li>
+<li>récupérer le nom des 10 premières maisons</li>
+<li>afficher ces noms dans la console</li>
+</ul>
+<p></details></p>
+<hr />
+<p><details><summary>Chuck Norris API</summary></p>
+<ul>
+<li>récupérer un "Chuck Norris fact" contenant le mot <em>"optimizes"</em></li>
+<li>afficher ce "Chuck Norris fact" dans la console</li>
+<li>récupérer la liste des catégories de "Chuck Norris facts"</li>
+<li>afficher ces catégories dans la console</li>
+</ul>
+<p></details></p>
+<hr />
+<h2 id="bonus">Bonus</h2>
+<p><details><summary>Sûr(e) ?</summary></p>
+<ul>
+<li>modifier le DOM pour afficher ces noms dans la <code>div#content</code></li>
+<li>😎</li>
+</ul>
+<p></details></p>
+<h2 id="mega-bonus">Mega Bonus</h2>
+<p><details><summary>Non, mais il ne faudrait pas abuser non plus…</summary></p>
+<ul>
+<li>s'amuser à récupérer les informations des 3 APIs fournies</li>
+<li>s'amuser à récupérer les informations d'autres API</li>
+<li>sur <a href="https://www.giantbomb.com/api/">les jeux vidéos</a> (il faudra s'inscrire et utiliser une clé d'API)</li>
+<li>sur <a href="https://pokeapi.co/">les Pokémons</a></li>
+<li>sur <a href="https://www.balldontlie.io">la NBA</a></li>
+<li>sur <a href="https://www.football-data.org/documentation/quickstart">le football</a></li>
+<li>et même une avec des <a href="https://jsonplaceholder.typicode.com/">données fictives</a> pour s'entraîner</li>
+<li>tu l'auras compris, il y a <em>beaucoup</em> d'API. Sans parler de celles qu'on va créer ^^</li>
+<li>il y a de quoi nous rendre… heureux 😂</li>
+</ul>
+<p></details></p>
